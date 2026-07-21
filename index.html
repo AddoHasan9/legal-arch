@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A1C40" />
+  <title>أرشيف الوثائق — مكتب المحاماة</title>
+  <meta name="description" content="نظام أرشفة وتنظيم وثائق الشركات لمكاتب المحاماة" />
+
+  <!-- الخطوط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- التصميم -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- المكتبات الخارجية -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div id="toast-wrap"></div>
+  <div id="screen">
+    <!-- شاشة تحميل مبدئية -->
+    <div style="display:grid;place-items:center;height:100vh;color:#0A1C40;font-family:Cairo,sans-serif;">
+      <div style="text-align:center">
+        <div style="width:56px;height:56px;border:4px solid #e6e9f0;border-top-color:#f5a623;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px"></div>
+        <p style="color:#667085;font-weight:700">جارٍ التحميل…</p>
+      </div>
+    </div>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+  <!-- ملفات التطبيق (الترتيب مهم) -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
