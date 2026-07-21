@@ -6,9 +6,33 @@ const screen = () => document.getElementById("screen");
 let realtimeChannel = null;
 
 // ---------------------------------------------------------------------------
+//  الثيم (وضع نهاري / ليلي)
+// ---------------------------------------------------------------------------
+const THEME_KEY = "lexarchive_theme";
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+  const btn = document.getElementById("btn-theme");
+  if (btn) {
+    btn.innerHTML = theme === "dark" ? iconSun : iconMoon;
+    btn.title = theme === "dark" ? "الوضع النهاري" : "الوضع الليلي";
+  }
+}
+
+function currentTheme() {
+  try { return localStorage.getItem(THEME_KEY) || "light"; } catch (_) { return "light"; }
+}
+
+function toggleTheme() {
+  applyTheme(currentTheme() === "dark" ? "light" : "dark");
+}
+
+// ---------------------------------------------------------------------------
 //  الإقلاع
 // ---------------------------------------------------------------------------
 async function boot() {
+  applyTheme(currentTheme());
   document.getElementById("firm-tag") &&
     (document.getElementById("firm-tag").textContent = window.APP_CONFIG.FIRM_NAME);
 
@@ -42,7 +66,12 @@ async function enterApp() {
     UI.toast("تعذّر تحميل البيانات: " + e.message, "error");
   }
   startRealtime();
-  window.addEventListener("hashchange", route);
+  window.addEventListener("hashchange", onHashChange);
+  route();
+}
+
+// غلاف لمُستمع تغيّر الرابط: لا نمرّر كائن الحدث إلى route
+function onHashChange() {
   route();
 }
 
@@ -114,6 +143,7 @@ function shell() {
         <div class="topbar__spacer"></div>
         <span class="chip">${State.companies.length} شركة</span>
         <span class="chip chip--gold">${State.documents.length} وثيقة</span>
+        <button class="icon-btn" id="btn-theme" aria-label="تبديل الوضع"></button>
       </header>
       <main class="view" id="view"></main>
     </div>
@@ -147,6 +177,9 @@ function bindShell() {
     }
     route(gs.value.trim());
   };
+  const themeBtn = document.getElementById("btn-theme");
+  themeBtn.onclick = toggleTheme;
+  applyTheme(currentTheme()); // يضبط أيقونة الزر حسب الوضع الحالي
 }
 
 // ---------------------------------------------------------------------------
@@ -155,7 +188,7 @@ function bindShell() {
 function route(searchOverride) {
   if (!State.session) return;
   const hash = location.hash || "#dashboard";
-  const search = searchOverride ?? "";
+  const search = typeof searchOverride === "string" ? searchOverride : "";
 
   // إبراز عنصر القائمة النشط
   const base = hash.split("/")[0].replace("#", "");
@@ -311,7 +344,7 @@ function renderResetPassword() {
 // ---------------------------------------------------------------------------
 function renderDashboard(search = "") {
   const v = document.getElementById("view");
-  const q = search.toLowerCase();
+  const q = (typeof search === "string" ? search : "").toLowerCase();
   let companies = State.companies;
   if (q) {
     const matchDocsCompanyIds = new Set(

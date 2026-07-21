@@ -434,3 +434,74 @@ svg { width: 1em; height: 1em; display: block; }
 
 /* التركيز */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* ============================================================================
+   الوضع الليلي (Dark Mode) — ألوان مريحة، كحلي عميق بدل الأسود الساطع
+   ============================================================================ */
+:root { color-scheme: light; }
+
+/* انتقال ناعم عند التبديل */
+body, .card, .stat, .sidebar, .topbar, .table-wrap, .modal,
+.field input, .select, .btn--ghost, .icon-btn, .dropzone, .doc-card__icon {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --navy:        #24365f;   /* أفتح شوية حتى يبان على الخلفية الغامجة */
+  --navy-700:    #2c4173;
+  --navy-600:    #3a5088;
+  --gold:        #f5b74a;   /* ذهبي أدفأ وأقل حدّة */
+  --gold-soft:   #362b18;
+  --ink:         #e7ebf3;   /* أبيض ناعم مو ناصع */
+  --muted:       #93a0bd;
+  --line:        #27324f;
+  --line-soft:   #1e2740;
+  --bg:          #0e1524;   /* كحلي عميق مريح */
+  --surface:     #151d30;
+  --surface-2:   #1b2540;
+  --danger:      #e0705f;
+  --danger-soft: #3a2320;
+  --ok:          #4cc38a;
+  --ok-soft:     #14301f;
+  --shadow:      0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.38);
+  --shadow-lg:   0 14px 44px rgba(0,0,0,.55);
+}
+
+/* عناصر بخلفيات بيضاء ثابتة تحتاج تخصيص بالوضع الليلي */
+[data-theme="dark"] .btn--ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .btn--ghost:hover { background: var(--surface-2); border-color: var(--navy-600); }
+[data-theme="dark"] .icon-btn { background: var(--surface); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .icon-btn:hover { background: var(--surface-2); border-color: var(--navy-600); }
+[data-theme="dark"] .field input,
+[data-theme="dark"] .select { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .field input::placeholder { color: #6b7794; }
+[data-theme="dark"] .search input { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .search input:focus { background: var(--surface); }
+[data-theme="dark"] .modal { background: var(--surface); }
+[data-theme="dark"] .auth__box--solo { background: var(--surface); }
+[data-theme="dark"] .auth__panel { background: var(--surface); }
+[data-theme="dark"] .preview__body { background: #0b1120; }
+[data-theme="dark"] .preview__frame { background: #fff; }
+[data-theme="dark"] .dropzone { border-color: var(--line); }
+[data-theme="dark"] .dropzone:hover,
+[data-theme="dark"] .dropzone--over { border-color: var(--gold); background: rgba(245,183,74,.07); }
+[data-theme="dark"] .note { background: rgba(245,183,74,.08); border-color: #4a3a1e; color: var(--gold); }
+[data-theme="dark"] .chip--gold { color: var(--gold); border-color: #4a3a1e; }
+
+/* أيقونات أنواع الملفات — درجات غامجة بدل الفاتحة */
+[data-theme="dark"] .doc-card__icon { background: var(--surface-2); color: var(--muted); }
+[data-theme="dark"] .doc-card__icon--pdf   { background: #3a2020; color: #ff8a7a; }
+[data-theme="dark"] .doc-card__icon--word  { background: #16233f; color: #7ba3e0; }
+[data-theme="dark"] .doc-card__icon--excel { background: #16301f; color: #5cc98a; }
+[data-theme="dark"] .doc-card__icon--image { background: #291d3a; color: #bd8ee6; }
+
+/* شارات السجل */
+[data-theme="dark"] .badge--edit   { background: #16233f; color: #7ba3e0; }
+[data-theme="dark"] .badge--login  { background: #241c3a; color: #bd8ee6; }
+[data-theme="dark"] .badge--export { background: #362b18; color: var(--gold); }
+[data-theme="dark"] .tag--muted    { background: var(--surface-2); color: var(--muted); border-color: var(--line); }
+
+/* تحسين تباين الشريط الجانبي بالوضع الليلي */
+[data-theme="dark"] .sidebar { background: linear-gradient(180deg, #141d31 0%, #0b1120 100%); border-inline-start: 1px solid var(--line); }
+[data-theme="dark"] .empty__icon { color: #38445f; }
