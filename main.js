@@ -141,8 +141,8 @@ function shell() {
           <input id="global-search" type="search" placeholder="ابحث في الشركات والوثائق…" autocomplete="off"/>
         </div>
         <div class="topbar__spacer"></div>
-        <span class="chip">${State.companies.length} شركة</span>
-        <span class="chip chip--gold">${State.documents.length} وثيقة</span>
+        <span class="chip" id="stat-companies">${State.companies.length} شركة</span>
+        <span class="chip chip--gold" id="stat-docs">${State.documents.length} وثيقة</span>
         <button class="icon-btn" id="btn-theme" aria-label="تبديل الوضع"></button>
       </header>
       <main class="view" id="view"></main>
@@ -185,8 +185,17 @@ function bindShell() {
 // ---------------------------------------------------------------------------
 //  التوجيه
 // ---------------------------------------------------------------------------
+// تحديث أرقام الشريط العلوي (شركات/وثائق)
+function updateShellStats() {
+  const c = document.getElementById("stat-companies");
+  const d = document.getElementById("stat-docs");
+  if (c) c.textContent = `${State.companies.length} شركة`;
+  if (d) d.textContent = `${State.documents.length} وثيقة`;
+}
+
 function route(searchOverride) {
   if (!State.session) return;
+  updateShellStats();
   const hash = location.hash || "#dashboard";
   const search = typeof searchOverride === "string" ? searchOverride : "";
 
@@ -478,6 +487,7 @@ function renderCompany(id) {
 function renderDocs(companyId) {
   const area = document.getElementById("docs-area");
   if (!area) return;
+  updateShellStats();
   let docs = DB.docsOf(companyId);
   const { q, cat, type } = companyFilter;
   if (q) docs = docs.filter((d) => d.file_name.toLowerCase().includes(q));
