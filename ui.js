@@ -139,4 +139,26 @@ const UI = {
     const parts = String(name || "؟").trim().split(/\s+/);
     return (parts[0]?.[0] || "") + (parts[1]?.[0] || "");
   },
+
+  // ------- حالة تاريخ الانتهاء -------
+  // ترجع { state, label, days } — state: none | ok | soon | urgent | expired
+  expiryStatus(dateStr) {
+    if (!dateStr) return { state: "none", label: "", days: null };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const d = new Date(dateStr); d.setHours(0, 0, 0, 0);
+    const days = Math.round((d - today) / 86400000);
+    if (days < 0)  return { state: "expired", label: `منتهية منذ ${Math.abs(days)} يوم`, days };
+    if (days === 0) return { state: "urgent", label: "تنتهي اليوم", days };
+    if (days <= 7)  return { state: "urgent", label: `تنتهي خلال ${days} يوم`, days };
+    if (days <= 30) return { state: "soon", label: `تنتهي خلال ${days} يوم`, days };
+    return { state: "ok", label: `صالحة (${days} يوم)`, days };
+  },
+
+  // ------- هيكل تحميل (Skeleton) -------
+  skeletonCards(n = 6, kind = "company") {
+    const one = kind === "doc"
+      ? `<div class="sk-card sk-card--doc"><div class="sk sk--tile"></div><div class="sk-lines"><div class="sk sk--line"></div><div class="sk sk--line sk--short"></div></div></div>`
+      : `<div class="sk-card"><div class="sk sk--pill"></div><div class="sk sk--title"></div><div class="sk sk--line"></div><div class="sk sk--line sk--short"></div></div>`;
+    return `<div class="grid grid--${kind === "doc" ? "docs" : "cards"}">${one.repeat(n)}</div>`;
+  },
 };

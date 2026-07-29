@@ -77,7 +77,7 @@ const DB = {
     return State.documents.filter((d) => d.company_id === companyId);
   },
 
-  async uploadDocument(companyId, file, category) {
+  async uploadDocument(companyId, file, category, expiryDate = null) {
     const ext = (file.name.split(".").pop() || "bin").toLowerCase();
     const safe = `${companyId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
@@ -104,6 +104,7 @@ const DB = {
       file_size: file.size,
       category,
       file_hash: hash,
+      expiry_date: expiryDate || null,
       uploaded_by: State.profile.id,
     }).select("*, uploader:uploaded_by(full_name)").single();
 
@@ -112,6 +113,16 @@ const DB = {
       throw error;
     }
     await DB.log("upload", "document", `رفع وثيقة: ${file.name}`);
+    return data;
+  },
+
+  // تعديل بيانات وثيقة (التصنيف / تاريخ الانتهاء)
+  async updateDocument(id, fields) {
+    const { data, error } = await sb.from("documents")
+      .update(fields).eq("id", id)
+      .select("*, uploader:uploaded_by(full_name)").single();
+    if (error) throw error;
+    await DB.log("edit", "document", `تعديل بيانات وثيقة`);
     return data;
   },
 

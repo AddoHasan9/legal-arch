@@ -60,6 +60,9 @@ async function boot() {
 async function enterApp() {
   screen().innerHTML = shell();
   bindShell();
+  // هيكل تحميل ريثما تنزل البيانات (إحساس أسرع)
+  const view = document.getElementById("view");
+  if (view) view.innerHTML = `<div class="page-head"><div><h1 class="page-title">الشركات</h1></div></div>${UI.skeletonCards(6, "company")}`;
   try {
     await Promise.all([DB.loadCompanies(), DB.loadDocuments()]);
   } catch (e) {
@@ -377,6 +380,7 @@ function renderDashboard(search = "") {
         <button class="btn btn--ghost" id="btn-export">${iconExcel}<span>تصدير Excel</span></button>
       </div>
     </div>
+    ${q ? "" : expiringWidget()}
     ${companies.length === 0
       ? UI.empty(iconBuilding, search ? "لا نتائج مطابقة" : "لا توجد شركات بعد",
           search ? "جرّب كلمة بحث أخرى." : (State.isAdmin() ? "ابدأ بإضافة أول شركة." : "بانتظار إضافة الشركات من المدير."))
@@ -393,6 +397,9 @@ function renderDashboard(search = "") {
   const addBtn = document.getElementById("btn-add-company");
   if (addBtn) addBtn.onclick = addCompanyDialog;
 
+  v.querySelectorAll("[data-goto-doc]").forEach((el) => {
+    el.onclick = () => (location.hash = `#company/${el.dataset.gotoDoc}`);
+  });
   v.querySelectorAll("[data-open]").forEach((el) => {
     el.onclick = () => (location.hash = `#company/${el.dataset.open}`);
   });
@@ -402,6 +409,40 @@ function renderDashboard(search = "") {
   v.querySelectorAll("[data-del-company]").forEach((el) => {
     el.onclick = (e) => { e.stopPropagation(); deleteCompanyDialog(el.dataset.delCompany); };
   });
+}
+
+// قائمة الوثائق القريبة من الانتهاء أو المنتهية (خلال 30 يوم)
+function expiringDocs() {
+  return State.documents
+    .map((d) => ({ d, ex: UI.expiryStatus(d.expiry_date) }))
+    .filter((x) => ["expired", "urgent", "soon"].includes(x.ex.state))
+    .sort((a, b) => (a.ex.days ?? 9e9) - (b.ex.days ?? 9e9));
+}
+
+function expiringWidget() {
+  const items = expiringDocs();
+  if (!items.length) return "";
+  const companyName = (id) => State.companies.find((c) => c.id === id)?.company_name || "—";
+  return `
+    <section class="alert-card">
+      <div class="alert-card__head">
+        <span class="alert-card__icon">${iconClock}</span>
+        <h3>وثائق قرب تنتهي</h3>
+        <span class="alert-card__count">${items.length}</span>
+      </div>
+      <ul class="alert-list">
+        ${items.slice(0, 6).map(({ d, ex }) => `
+          <li class="alert-list__item" data-goto-doc="${d.company_id}">
+            <span class="dot dot--${ex.state}"></span>
+            <span class="alert-list__main">
+              <b>${UI.esc(d.file_name)}</b>
+              <small>${UI.esc(companyName(d.company_id))} · ${UI.esc(d.category)}</small>
+            </span>
+            <span class="alert-list__badge alert-list__badge--${ex.state}">${UI.esc(ex.label)}</span>
+          </li>`).join("")}
+      </ul>
+      ${items.length > 6 ? `<p class="alert-card__more">و ${items.length - 6} وثيقة أخرى…</p>` : ""}
+    </section>`;
 }
 
 function companyCard(c) {
@@ -439,7 +480,13 @@ function renderCompany(id) {
   companyFilter = { q: "", cat: "", type: "" };
 
   v.innerHTML = `
-    <a class="back-link" href="#dashboard">${iconArrowBack} كل الشركات</a>
+    <nav class="crumbs">
+      <a href="#dashboard">${iconHome} الرئيسية</a>
+      <span class="crumbs__sep">${iconArrowBack}</span>
+      <a href="#dashboard">الشركات</a>
+      <span class="crumbs__sep">${iconArrowBack}</span>
+      <span class="crumbs__current">${UI.esc(c.company_name)}</span>
+    </nav>
     <div class="company-head">
       <div class="company-head__id">#${c.company_number}</div>
       <div class="company-head__body">
@@ -505,29 +552,84 @@ function renderDocs(companyId) {
     el.onclick = () => previewDoc(el.dataset.preview));
   area.querySelectorAll("[data-download]").forEach((el) =>
     el.onclick = (e) => { e.stopPropagation(); downloadDoc(el.dataset.download); });
+  area.querySelectorAll("[data-edit-doc]").forEach((el) =>
+    el.onclick = (e) => { e.stopPropagation(); editDocDialog(el.dataset.editDoc); });
   area.querySelectorAll("[data-del-doc]").forEach((el) =>
     el.onclick = (e) => { e.stopPropagation(); deleteDocDialog(el.dataset.delDoc); });
+  loadThumbs(area);
+}
+
+// تحميل الصور المصغّرة للوثائق من نوع صورة (أفضل جهد، لا يوقف الواجهة)
+async function loadThumbs(scope) {
+  const tiles = scope.querySelectorAll("[data-thumb]");
+  for (const t of tiles) {
+    try {
+      const url = await DB.signedUrl(t.dataset.thumb);
+      t.style.backgroundImage = `url("${url}")`;
+      t.classList.add("doc-card__icon--loaded");
+    } catch (_) {}
+  }
 }
 
 function docCard(d) {
-  const canDelete = State.isAdmin() || d.uploaded_by === State.profile.id;
+  const canManage = State.isAdmin() || d.uploaded_by === State.profile.id;
   const uploader = d.uploader?.full_name || "—";
+  const ex = UI.expiryStatus(d.expiry_date);
+  const isImg = d.file_type === "image";
   return `
   <article class="card doc-card" data-preview="${d.id}" tabindex="0">
-    <div class="doc-card__icon doc-card__icon--${d.file_type}">${UI.fileIcon(d.file_type)}</div>
+    <div class="doc-card__icon doc-card__icon--${d.file_type}${isImg ? " doc-card__icon--thumb" : ""}"
+      ${isImg ? `data-thumb="${UI.esc(d.storage_path)}"` : ""}>${UI.fileIcon(d.file_type)}</div>
     <div class="doc-card__body">
       <h4 class="doc-card__name" title="${UI.esc(d.file_name)}">${UI.esc(d.file_name)}</h4>
       <div class="doc-card__tags">
         <span class="tag">${UI.esc(d.category)}</span>
         <span class="tag tag--muted">${UI.fileSize(d.file_size)}</span>
+        ${ex.state !== "none" ? `<span class="tag tag--exp tag--exp-${ex.state}">${iconClock}${UI.esc(ex.label)}</span>` : ""}
       </div>
       <div class="doc-card__meta">${iconUser}${UI.esc(uploader)} · ${UI.date(d.uploaded_at)}</div>
     </div>
     <div class="doc-card__actions">
       <button class="icon-btn" data-download="${d.id}" title="تنزيل">${iconDownload}</button>
-      ${canDelete ? `<button class="icon-btn icon-btn--danger" data-del-doc="${d.id}" title="حذف">${iconTrash}</button>` : ""}
+      ${canManage ? `<button class="icon-btn" data-edit-doc="${d.id}" title="تعديل">${iconEdit}</button>` : ""}
+      ${canManage ? `<button class="icon-btn icon-btn--danger" data-del-doc="${d.id}" title="حذف">${iconTrash}</button>` : ""}
     </div>
   </article>`;
+}
+
+// حوار تعديل وثيقة (تصنيف + تاريخ انتهاء)
+function editDocDialog(id) {
+  const d = State.documents.find((x) => x.id === id);
+  if (!d) return;
+  const m = UI.openModal(`
+    <h3 class="modal__title">تعديل الوثيقة</h3>
+    <p class="modal__text" style="margin-bottom:14px">${UI.esc(d.file_name)}</p>
+    <form id="ed-form" class="form">
+      <label class="field"><span>التصنيف</span>
+        <select id="ed-cat" class="select">
+          ${UI.categories.map((k) => `<option value="${k}" ${k === d.category ? "selected" : ""}>${k}</option>`).join("")}
+        </select></label>
+      <label class="field"><span>تاريخ الانتهاء <small class="hint-inline">(اتركه فارغاً إن لا يوجد)</small></span>
+        <input type="date" id="ed-exp" class="select" value="${d.expiry_date || ""}"/></label>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" data-close>إلغاء</button>
+        <button type="submit" class="btn btn--primary">حفظ</button>
+      </div>
+    </form>`, "sm");
+  m.querySelector("#ed-form").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await DB.updateDocument(id, {
+        category: m.querySelector("#ed-cat").value,
+        expiry_date: m.querySelector("#ed-exp").value || null,
+      });
+      await DB.loadDocuments();
+      UI.closeModal(m);
+      UI.toast("تم حفظ التعديلات", "success");
+      if (location.hash.startsWith("#company/")) renderDocs(location.hash.split("/")[1]);
+      else route();
+    } catch (ex) { UI.toast("فشل الحفظ: " + ex.message, "error"); }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -557,6 +659,8 @@ function renderUpload() {
             ${UI.categories.map((k) => `<option value="${k}">${k}</option>`).join("")}
           </select>
         </label>
+        <label class="field"><span>تاريخ الانتهاء <small class="hint-inline">(اختياري — للرخص والعقود)</small></span>
+          <input type="date" id="up-exp" class="select"/></label>
       </div>
       <div class="dropzone" id="dropzone">
         <div class="dropzone__icon">${iconUploadLg}</div>
@@ -568,7 +672,7 @@ function renderUpload() {
       <div id="up-list" class="up-list"></div>
     </div>`;
 
-  wireUploader("up-company", "up-cat", "dropzone", "up-files", "up-list");
+  wireUploader("up-company", "up-cat", "dropzone", "up-files", "up-list", null, "up-exp");
 }
 
 // ---------------------------------------------------------------------------
@@ -648,10 +752,14 @@ function uploadDialog(companyId) {
   const m = UI.openModal(`
     <h3 class="modal__title">رفع وثيقة</h3>
     <div class="form">
-      <label class="field"><span>التصنيف</span>
-        <select id="ud-cat" class="select">
-          ${UI.categories.map((k) => `<option value="${k}">${k}</option>`).join("")}
-        </select></label>
+      <div class="form--grid">
+        <label class="field"><span>التصنيف</span>
+          <select id="ud-cat" class="select">
+            ${UI.categories.map((k) => `<option value="${k}">${k}</option>`).join("")}
+          </select></label>
+        <label class="field"><span>تاريخ الانتهاء <small class="hint-inline">(اختياري)</small></span>
+          <input type="date" id="ud-exp" class="select"/></label>
+      </div>
       <div class="dropzone dropzone--sm" id="ud-zone">
         <div class="dropzone__icon">${iconUploadLg}</div>
         <p class="dropzone__title">اسحب أو اختر الملفات</p>
@@ -661,11 +769,11 @@ function uploadDialog(companyId) {
       <div id="ud-list" class="up-list"></div>
       <div class="modal__actions"><button class="btn btn--ghost" data-close>إغلاق</button></div>
     </div>`, "md");
-  wireUploader(null, "ud-cat", "ud-zone", "ud-files", "ud-list", companyId);
+  wireUploader(null, "ud-cat", "ud-zone", "ud-files", "ud-list", companyId, "ud-exp");
 }
 
 // منطق الرفع المشترك (صفحة + حوار)
-function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedCompanyId) {
+function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedCompanyId, expirySelId) {
   const zone = document.getElementById(zoneId);
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
@@ -685,6 +793,7 @@ function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedComp
     if (!files.length) return;
     const companyId = fixedCompanyId || document.getElementById(companySelId).value;
     const category = document.getElementById(catSelId).value;
+    const expiry = (expirySelId && document.getElementById(expirySelId)?.value) || null;
 
     for (const file of files) {
       if (file.size > 50 * 1024 * 1024) {
@@ -699,7 +808,7 @@ function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedComp
         <span class="up-row__status">جارٍ الرفع…</span>`;
       list.prepend(row);
       try {
-        await DB.uploadDocument(companyId, file, category);
+        await DB.uploadDocument(companyId, file, category, expiry);
         row.querySelector(".up-row__status").innerHTML = `<span class="ok">${iconCheck} تم</span>`;
       } catch (ex) {
         row.querySelector(".up-row__status").innerHTML = `<span class="bad">فشل</span>`;

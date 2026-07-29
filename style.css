@@ -321,8 +321,8 @@ svg { width: 1em; height: 1em; display: block; }
 
 /* ============================ الجداول ============================ */
 .table-head-actions { display: flex; justify-content: flex-start; margin-bottom: 16px; }
-.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden auto; box-shadow: var(--shadow); }
-.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: var(--shadow); }
+.table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 14px; }
 .table thead th { text-align: start; padding: 13px 16px; background: var(--surface-2); color: var(--muted); font-weight: 700; font-size: 12.5px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .table tbody td { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
 .table tbody tr:last-child td { border-bottom: none; }
@@ -505,3 +505,76 @@ body, .card, .stat, .sidebar, .topbar, .table-wrap, .modal,
 /* تحسين تباين الشريط الجانبي بالوضع الليلي */
 [data-theme="dark"] .sidebar { background: linear-gradient(180deg, #141d31 0%, #0b1120 100%); border-inline-start: 1px solid var(--line); }
 [data-theme="dark"] .empty__icon { color: #38445f; }
+
+/* ============================================================================
+   النسخة 2 — تحسينات بصرية + ميزة تواريخ الانتهاء
+   ============================================================================ */
+
+/* خط نسخي رسمي للعناوين (طابع وثيقة قانونية) */
+.page-title, .auth__brand, .auth__title, .brand__name, .modal__title {
+  font-family: "Noto Naskh Arabic", "Cairo", serif;
+}
+
+.hint-inline { color: var(--muted); font-weight: 500; font-size: 12px; }
+
+/* مسار التنقّل (Breadcrumbs) */
+.crumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 13.5px; color: var(--muted); flex-wrap: wrap; }
+.crumbs a { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-weight: 700; }
+.crumbs a:hover { color: var(--navy); }
+.crumbs a svg { font-size: 15px; }
+.crumbs__sep { color: #c3cad8; display: inline-flex; }
+.crumbs__sep svg { font-size: 15px; }
+.crumbs__current { color: var(--ink); font-weight: 800; }
+
+/* شارة تاريخ الانتهاء */
+.tag--exp { display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+.tag--exp svg { font-size: 13px; }
+.tag--exp-ok      { background: var(--ok-soft);     color: var(--ok);      }
+.tag--exp-soon    { background: #fff3d6;            color: #9a6a00;        }
+.tag--exp-urgent  { background: #ffe6d6;            color: #b5480f;        }
+.tag--exp-expired { background: var(--danger-soft); color: var(--danger);  }
+
+/* صورة مصغّرة داخل بطاقة الوثيقة */
+.doc-card__icon--thumb { background-size: cover; background-position: center; position: relative; }
+.doc-card__icon--thumb.doc-card__icon--loaded svg { display: none; }
+
+/* بطاقة تنبيه "قرب تنتهي" */
+.alert-card { background: var(--surface); border: 1px solid #f3d69a; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden; }
+.alert-card__head { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: linear-gradient(90deg, #fffaf0, transparent); border-bottom: 1px solid var(--line-soft); }
+.alert-card__head h3 { font-size: 15.5px; font-weight: 800; color: var(--navy); font-family: "Noto Naskh Arabic", "Cairo", serif; }
+.alert-card__icon { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--gold); color: var(--navy); font-size: 18px; }
+.alert-card__count { margin-inline-start: auto; background: var(--danger); color: #fff; font-size: 12px; font-weight: 800; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; display: grid; place-items: center; }
+.alert-list { list-style: none; }
+.alert-list__item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid var(--line-soft); cursor: pointer; transition: background .15s; }
+.alert-list__item:last-child { border-bottom: none; }
+.alert-list__item:hover { background: var(--surface-2); }
+.alert-list__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.alert-list__main b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-list__main small { color: var(--muted); font-size: 12px; }
+.alert-list__badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.alert-list__badge--soon    { background: #fff3d6; color: #9a6a00; }
+.alert-list__badge--urgent  { background: #ffe6d6; color: #b5480f; }
+.alert-list__badge--expired { background: var(--danger-soft); color: var(--danger); }
+.alert-card__more { padding: 10px 20px; color: var(--muted); font-size: 12.5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.dot--soon { background: #f0a500; } .dot--urgent { background: #e8641c; } .dot--expired { background: var(--danger); }
+
+/* هيكل التحميل (Skeleton) */
+.sk { background: linear-gradient(90deg, #eef1f6 25%, #e2e7ef 37%, #eef1f6 63%); background-size: 400% 100%; animation: sk 1.4s ease infinite; border-radius: 8px; }
+@keyframes sk { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+.sk-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+.sk--pill { width: 46px; height: 20px; border-radius: 999px; margin-bottom: 14px; }
+.sk--title { width: 70%; height: 20px; margin-bottom: 16px; }
+.sk--line { width: 100%; height: 12px; margin-bottom: 9px; }
+.sk--short { width: 45%; }
+.sk-card--doc { display: flex; align-items: flex-start; gap: 14px; }
+.sk--tile { width: 46px; height: 46px; border-radius: 11px; flex-shrink: 0; }
+.sk-lines { flex: 1; }
+
+/* ------- نسخ ليلية للعناصر الجديدة ------- */
+[data-theme="dark"] .alert-card { background: var(--surface); border-color: #4a3a1e; }
+[data-theme="dark"] .alert-card__head { background: linear-gradient(90deg, rgba(245,183,74,.08), transparent); }
+[data-theme="dark"] .tag--exp-soon,   [data-theme="dark"] .alert-list__badge--soon   { background: #3a2f14; color: #f0c257; }
+[data-theme="dark"] .tag--exp-urgent, [data-theme="dark"] .alert-list__badge--urgent { background: #3a2411; color: #f0a06a; }
+[data-theme="dark"] .crumbs__sep { color: #38445f; }
+[data-theme="dark"] .sk { background: linear-gradient(90deg, #1b2540 25%, #243050 37%, #1b2540 63%); background-size: 400% 100%; }
