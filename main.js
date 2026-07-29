@@ -831,25 +831,32 @@ async function previewDoc(id) {
   try { url = await DB.signedUrl(d.storage_path); }
   catch (ex) { return UI.toast("تعذّر فتح الملف: " + ex.message, "error"); }
 
+  // على الجوال لا نستخدم iframe للـ PDF (سفاري يكبّره ويكسر التمرير)
+  const isMobile = window.matchMedia("(max-width: 860px)").matches;
+
   let inner;
   if (d.file_type === "image") {
     inner = `<img class="preview__img" src="${url}" alt="${UI.esc(d.file_name)}"/>`;
-  } else if (d.file_type === "pdf") {
+  } else if (d.file_type === "pdf" && !isMobile) {
     inner = `<iframe class="preview__frame" src="${url}"></iframe>`;
   } else {
+    const isPdf = d.file_type === "pdf";
     inner = `<div class="preview__noview">
       <div class="preview__noview-icon">${UI.fileIcon(d.file_type)}</div>
-      <p>لا تتوفّر معاينة مباشرة لهذا النوع.</p>
-      <a class="btn btn--primary" href="${url}" download>${iconDownload}<span>تنزيل الملف</span></a>
+      <p>${isPdf ? "افتح الملف في عارض النظام للتصفّح والتكبير بسلاسة." : "لا تتوفّر معاينة مباشرة لهذا النوع."}</p>
+      <div class="preview__noview-actions">
+        <a class="btn btn--primary" href="${url}" target="_blank" rel="noopener">${iconDoc}<span>فتح الملف</span></a>
+        <button class="btn btn--ghost" data-dl="${d.id}">${iconDownload}<span>تنزيل</span></button>
+      </div>
     </div>`;
   }
 
-  UI.openModal(`
+  const m = UI.openModal(`
     <div class="preview">
       <div class="preview__head">
         <div class="preview__title">${UI.fileIcon(d.file_type)}<span>${UI.esc(d.file_name)}</span></div>
         <div class="preview__head-actions">
-          <a class="icon-btn" href="${url}" download title="تنزيل">${iconDownload}</a>
+          <button class="icon-btn" data-dl="${d.id}" title="تنزيل">${iconDownload}</button>
           <button class="icon-btn" data-close title="إغلاق">${iconClose}</button>
         </div>
       </div>
@@ -861,6 +868,9 @@ async function previewDoc(id) {
         <span>${UI.dateTime(d.uploaded_at)}</span>
       </div>
     </div>`, "lg");
+
+  m.querySelectorAll("[data-dl]").forEach((el) =>
+    el.onclick = () => downloadDoc(el.dataset.dl));
 }
 
 async function downloadDoc(id) {

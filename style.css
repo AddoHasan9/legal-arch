@@ -578,3 +578,12 @@ body, .card, .stat, .sidebar, .topbar, .table-wrap, .modal,
 [data-theme="dark"] .tag--exp-urgent, [data-theme="dark"] .alert-list__badge--urgent { background: #3a2411; color: #f0a06a; }
 [data-theme="dark"] .crumbs__sep { color: #38445f; }
 [data-theme="dark"] .sk { background: linear-gradient(90deg, #1b2540 25%, #243050 37%, #1b2540 63%); background-size: 400% 100%; }
+
+/* معاينة الوثائق — أزرار الفتح/التنزيل + منع تمرير الصفحة خلف المعاينة */
+.preview__body { overscroll-behavior: contain; }
+.preview__noview-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+@media (max-width: 860px) {
+  .preview { height: auto; max-height: 82vh; }
+  .preview__noview { padding: 30px 18px; }
+  .preview__noview-actions .btn { flex: 1; justify-content: center; min-width: 130px; }
+}
