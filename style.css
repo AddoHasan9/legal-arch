@@ -534,6 +534,23 @@ svg { width: 1em; height: 1em; display: block; }
   .chip { display: none; }
   .view { padding: 20px 16px 50px; }
   .page-title { font-size: 23px; }
+
+  /* تعطيل الضبابية الزجاجية على الجوال — backdrop-filter ثقيل على سفاري
+     ويسبّب فراغاً لحظياً (Flash) عند إعادة الرسم؛ نعوّضه بخلفية شبه صلدة */
+  .topbar, .sidebar, .modal-backdrop, .bg-tray,
+  .auth__box--solo, .alert-card, .btn--ghost, .icon-btn, .chip {
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  }
+  .topbar   { background: rgba(255,255,255,.97); }
+  .sidebar  { background: rgba(255,255,255,.97); }
+  .bg-tray  { background: rgba(255,255,255,.98); }
+  .auth__box--solo { background: rgba(255,255,255,.98); }
+  .alert-card { background: var(--surface); }
+  .sidebar-scrim { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  [data-theme="dark"] .topbar  { background: rgba(16,23,41,.97); }
+  [data-theme="dark"] .sidebar { background: rgba(16,23,41,.97); }
+  [data-theme="dark"] .bg-tray { background: rgba(22,30,52,.98); }
+  [data-theme="dark"] .auth__box--solo { background: rgba(22,30,52,.98); }
 }
 
 @media (max-width: 520px) {
@@ -588,7 +605,6 @@ body, .card, .stat, .sidebar, .topbar, .table-wrap, .modal,
 }
 
 /* انعكاس زجاجي — حافة علوية مضيئة على الأسطح الزجاجية بالوضع الليلي */
-[data-theme="dark"] .sidebar,
 [data-theme="dark"] .modal,
 [data-theme="dark"] .auth__box--solo,
 [data-theme="dark"] .alert-card,
