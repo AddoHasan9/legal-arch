@@ -350,22 +350,24 @@ svg { width: 1em; height: 1em; display: block; }
 
 .dropzone__art { position: relative; height: 88px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
 .dropzone__chip {
-  position: absolute; display: grid; place-items: center; border-radius: 14px;
+  position: absolute; display: grid; place-items: center;
   box-shadow: var(--shadow); transition: transform .2s;
 }
 .dropzone__chip--main {
-  width: 60px; height: 60px; font-size: 28px; z-index: 2;
+  width: 56px; height: 56px; font-size: 25px; z-index: 2; border-radius: 17px;
   background: linear-gradient(135deg, var(--navy), var(--navy-700)); color: var(--gold);
+  box-shadow: 0 8px 20px -6px rgba(0,0,0,.35);
   animation: dz-breathe 2.8s ease-in-out infinite;
 }
 .dropzone__chip--pdf, .dropzone__chip--word {
-  width: 42px; height: 42px; font-size: 19px; z-index: 1; background: var(--surface); border: 1px solid var(--line);
+  width: 46px; height: 46px; font-size: 20px; z-index: 1; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--line);
 }
-.dropzone__chip--pdf  { color: #d0392b; transform: translate(38px, 6px) rotate(8deg); animation: dz-float-r 3.4s ease-in-out infinite; }
-.dropzone__chip--word { color: #2b579a; transform: translate(-38px, 6px) rotate(-8deg); animation: dz-float-l 3.4s ease-in-out infinite; }
+.dropzone__chip--pdf  { color: #d0392b; transform: translate(34px, 6px) rotate(8deg); animation: dz-float-r 3.4s ease-in-out infinite; }
+.dropzone__chip--word { color: #2b579a; transform: translate(-34px, 6px) rotate(-8deg); animation: dz-float-l 3.4s ease-in-out infinite; }
 @keyframes dz-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-@keyframes dz-float-r { 0%, 100% { transform: translate(38px, 6px) rotate(8deg); } 50% { transform: translate(38px, -2px) rotate(8deg); } }
-@keyframes dz-float-l { 0%, 100% { transform: translate(-38px, 6px) rotate(-8deg); } 50% { transform: translate(-38px, -2px) rotate(-8deg); } }
+@keyframes dz-float-r { 0%, 100% { transform: translate(34px, 6px) rotate(8deg); } 50% { transform: translate(34px, -2px) rotate(8deg); } }
+@keyframes dz-float-l { 0%, 100% { transform: translate(-34px, 6px) rotate(-8deg); } 50% { transform: translate(-34px, -2px) rotate(-8deg); } }
 @media (prefers-reduced-motion: reduce) {
   .dropzone__chip--main, .dropzone__chip--pdf, .dropzone__chip--word { animation: none; }
 }
