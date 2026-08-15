@@ -125,12 +125,13 @@ function shell() {
           </a>`).join("")}
       </nav>
       <div class="sidebar__foot">
-        <div class="me">
+        <div class="me me--card">
           <div class="me__avatar">${UI.esc(UI.initials(State.profile.full_name))}</div>
           <div class="me__info">
             <span class="me__name">${UI.esc(State.profile.full_name)}</span>
             <span class="me__role">${State.isAdmin() ? "مدير النظام" : "محامٍ"}</span>
           </div>
+          <span class="me__dots">${iconMore}</span>
         </div>
         <button class="btn btn--ghost btn--block" id="btn-logout">${iconOut}<span>خروج</span></button>
       </div>
@@ -144,8 +145,8 @@ function shell() {
           <input id="global-search" type="search" placeholder="ابحث في الشركات والوثائق…" autocomplete="off"/>
         </div>
         <div class="topbar__spacer"></div>
-        <span class="chip" id="stat-companies">${State.companies.length} شركة</span>
-        <span class="chip chip--gold" id="stat-docs">${State.documents.length} وثيقة</span>
+        <span class="chip" id="stat-companies"><b>${State.companies.length}</b> شركة</span>
+        <span class="chip chip--gold" id="stat-docs"><b>${State.documents.length}</b> وثيقة</span>
         <button class="icon-btn" id="btn-theme" aria-label="تبديل الوضع"></button>
       </header>
       <main class="view" id="view"></main>
@@ -192,8 +193,8 @@ function bindShell() {
 function updateShellStats() {
   const c = document.getElementById("stat-companies");
   const d = document.getElementById("stat-docs");
-  if (c) c.textContent = `${State.companies.length} شركة`;
-  if (d) d.textContent = `${State.documents.length} وثيقة`;
+  if (c) c.innerHTML = `<b>${State.companies.length}</b> شركة`;
+  if (d) d.innerHTML = `<b>${State.documents.length}</b> وثيقة`;
 }
 
 function route(searchOverride) {
@@ -663,7 +664,7 @@ function renderUpload() {
           <input type="date" id="up-exp" class="select"/></label>
       </div>
       <div class="dropzone" id="dropzone">
-        <div class="dropzone__icon">${iconUploadLg}</div>
+        ${dropzoneArt()}
         <p class="dropzone__title">اسحب الملفات هنا أو اضغط للاختيار</p>
         <p class="dropzone__hint">PDF · Word · Excel · صور</p>
         <input type="file" id="up-files" multiple hidden
@@ -673,6 +674,15 @@ function renderUpload() {
     </div>`;
 
   wireUploader("up-company", "up-cat", "dropzone", "up-files", "up-list", null, "up-exp");
+}
+
+// أيقونات ملفات متراكبة لمنطقة الرفع (بدل أيقونة واحدة ثابتة)
+function dropzoneArt() {
+  return `<div class="dropzone__art">
+    <span class="dropzone__chip dropzone__chip--word">${iconDoc}</span>
+    <span class="dropzone__chip dropzone__chip--main">${iconFolderPlus}</span>
+    <span class="dropzone__chip dropzone__chip--pdf">${iconDoc}</span>
+  </div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -761,7 +771,7 @@ function uploadDialog(companyId) {
           <input type="date" id="ud-exp" class="select"/></label>
       </div>
       <div class="dropzone dropzone--sm" id="ud-zone">
-        <div class="dropzone__icon">${iconUploadLg}</div>
+        ${dropzoneArt()}
         <p class="dropzone__title">اسحب أو اختر الملفات</p>
         <input type="file" id="ud-files" multiple hidden
           accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.gif,.webp"/>
@@ -801,7 +811,7 @@ function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedComp
         continue;
       }
       const row = document.createElement("div");
-      row.className = "up-row";
+      row.className = "up-row up-row--busy";
       row.innerHTML = `
         <span class="up-row__icon">${UI.fileIcon(UI.fileType(file.name))}</span>
         <span class="up-row__name">${UI.esc(file.name)}</span>
@@ -809,8 +819,10 @@ function wireUploader(companySelId, catSelId, zoneId, inputId, listId, fixedComp
       list.prepend(row);
       try {
         await DB.uploadDocument(companyId, file, category, expiry);
+        row.className = "up-row up-row--ok";
         row.querySelector(".up-row__status").innerHTML = `<span class="ok">${iconCheck} تم</span>`;
       } catch (ex) {
+        row.className = "up-row up-row--bad";
         row.querySelector(".up-row__status").innerHTML = `<span class="bad">فشل</span>`;
         UI.toast(`فشل رفع ${file.name}: ${ex.message}`, "error");
       }

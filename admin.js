@@ -61,10 +61,10 @@ function adminOverview() {
 
   return `
     <div class="stats">
-      ${statCard(iconBuilding, State.companies.length, "شركة")}
-      ${statCard(iconDoc, State.documents.length, "وثيقة")}
-      ${statCard(iconLayers, new Set(State.documents.map((d) => d.category)).size, "تصنيف مستخدم")}
-      ${statCard(iconActivity, adminActivity.length, "عملية مسجّلة")}
+      ${statCard(iconBuilding, State.companies.length, "شركة", "navy")}
+      ${statCard(iconDoc, State.documents.length, "وثيقة", "gold")}
+      ${statCard(iconLayers, new Set(State.documents.map((d) => d.category)).size, "تصنيف مستخدم", "violet")}
+      ${statCard(iconActivity, adminActivity.length, "عملية مسجّلة", "green")}
     </div>
 
     <div class="two-col">
@@ -95,8 +95,8 @@ function adminOverview() {
     </div>`;
 }
 
-function statCard(icon, value, label) {
-  return `<div class="stat">
+function statCard(icon, value, label, variant = "navy") {
+  return `<div class="stat stat--${variant}">
     <div class="stat__icon">${icon}</div>
     <div class="stat__num">${value}</div>
     <div class="stat__label">${label}</div>
