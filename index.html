@@ -20,17 +20,85 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+  <script>
+    // ضبط الوضع (ليلي/نهاري) فوراً قبل أي رسم — يمنع "ومضة" لون خاطئ لحظة التحميل
+    try {
+      var __theme = localStorage.getItem("lexarchive_theme") || "light";
+      document.documentElement.setAttribute("data-theme", __theme);
+    } catch (e) {}
+  </script>
   <div id="toast-wrap"></div>
   <div id="screen">
     <!-- شاشة تحميل مبدئية -->
-    <div style="display:grid;place-items:center;height:100vh;color:#0A1C40;font-family:Cairo,sans-serif;">
-      <div style="text-align:center">
-        <div style="width:56px;height:56px;border:4px solid #e6e9f0;border-top-color:#f5a623;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px"></div>
-        <p style="color:#667085;font-weight:700">جارٍ التحميل…</p>
+    <div class="boot">
+      <div class="boot__stage">
+        <span class="boot__ring boot__ring--1"></span>
+        <span class="boot__ring boot__ring--2"></span>
+        <div class="boot__seal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" />
+          </svg>
+        </div>
       </div>
+      <p class="boot__text">جارٍ التحميل<span class="boot__dots"><i></i><i></i><i></i></span></p>
     </div>
   </div>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <style>
+    .boot {
+      display: grid; place-items: center; gap: 22px; height: 100vh; height: 100dvh;
+      background: #F5F5F7; font-family: "Cairo", "Tajawal", sans-serif;
+    }
+    [data-theme="dark"] .boot { background: #0A1220; }
+
+    .boot__stage { position: relative; width: 84px; height: 84px; display: grid; place-items: center; }
+
+    .boot__ring {
+      position: absolute; inset: 0; border-radius: 22px;
+      border: 1.5px solid rgba(192,138,46,.45);
+      animation: boot-pulse 2.1s cubic-bezier(.4,0,.3,1) infinite;
+    }
+    .boot__ring--2 { animation-delay: .7s; }
+
+    .boot__seal {
+      position: relative; z-index: 1; width: 58px; height: 58px; border-radius: 17px;
+      display: grid; place-items: center; color: #C08A2E;
+      background: linear-gradient(135deg, #1D1D1F, #2C2C2E);
+      box-shadow: 0 10px 26px -8px rgba(0,0,0,.4);
+      animation: boot-breathe 2.1s ease-in-out infinite;
+    }
+    .boot__seal svg { width: 28px; height: 28px; }
+
+    .boot__text {
+      display: flex; align-items: center; gap: 2px;
+      color: #6E6E73; font-weight: 700; font-size: 14.5px;
+    }
+    [data-theme="dark"] .boot__text { color: #8B96B3; }
+
+    .boot__dots { display: inline-flex; gap: 3px; margin-inline-start: 2px; }
+    .boot__dots i {
+      width: 4px; height: 4px; border-radius: 50%; background: #C08A2E; display: inline-block;
+      animation: boot-dot 1.2s ease-in-out infinite;
+    }
+    .boot__dots i:nth-child(2) { animation-delay: .15s; }
+    .boot__dots i:nth-child(3) { animation-delay: .3s; }
+
+    @keyframes boot-pulse {
+      0%   { transform: scale(.85); opacity: .9; }
+      70%  { transform: scale(1.35); opacity: 0; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+    @keyframes boot-breathe {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.06); }
+    }
+    @keyframes boot-dot {
+      0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+      30%           { transform: translateY(-4px); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .boot__ring, .boot__seal, .boot__dots i { animation: none; }
+    }
+  </style>
 
   <!-- ملفات التطبيق (الترتيب مهم) -->
   <script src="config.js"></script>
