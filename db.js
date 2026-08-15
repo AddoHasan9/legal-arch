@@ -86,7 +86,7 @@ const DB = {
     return State.documents.filter((d) => d.company_id === companyId);
   },
 
-  async uploadDocument(companyId, file, category, expiryDate = null) {
+  async uploadDocument(companyId, file, category, documentDate = null) {
     const ext = (file.name.split(".").pop() || "bin").toLowerCase();
     const safe = `${companyId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
@@ -113,7 +113,7 @@ const DB = {
       file_size: file.size,
       category,
       file_hash: hash,
-      expiry_date: expiryDate || null,
+      document_date: documentDate || null,
       uploaded_by: State.profile.id,
     }).select("*, uploader:uploaded_by(full_name)").single();
 

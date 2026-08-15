@@ -92,6 +92,13 @@ const UI = {
     } catch { return iso; }
   },
 
+  // ------- تاريخ اليوم بصيغة yyyy-mm-dd (لقيمة افتراضية بحقول <input type=date>) -------
+  todayStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  },
+
   // ------- تنسيق حجم الملف -------
   fileSize(bytes) {
     if (!bytes) return "0 B";

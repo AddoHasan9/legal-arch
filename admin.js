@@ -70,17 +70,7 @@ function adminOverview() {
     <div class="two-col">
       <div class="card">
         <h3 class="card__title">أحدث الوثائق</h3>
-        ${recentDocs.length ? `<ul class="mini-list">${recentDocs.map((d) => {
-          const co = State.companies.find((c) => c.id === d.company_id);
-          return `<li class="mini-list__item">
-            <span class="mini-list__ic doc-card__icon--${d.file_type}">${UI.fileIcon(d.file_type)}</span>
-            <span class="mini-list__main">
-              <b>${UI.esc(d.file_name)}</b>
-              <small>${UI.esc(co?.company_name || "—")} · ${UI.esc(d.uploader?.full_name || "—")}</small>
-            </span>
-            <small class="mini-list__time">${UI.date(d.uploaded_at)}</small>
-          </li>`;
-        }).join("")}</ul>` : `<p class="muted">لا وثائق بعد.</p>`}
+        ${recentDocsList(recentDocs)}
       </div>
 
       <div class="card">
