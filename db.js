@@ -35,20 +35,29 @@ const DB = {
     return data;
   },
 
-  async addCompany(name) {
+  async addCompany(fields) {
     const { data, error } = await sb
       .from("companies")
-      .insert({ company_name: name, created_by: State.profile.id })
+      .insert({
+        company_name: fields.name,
+        tax_file_no: fields.taxFileNo || null,
+        registrar_file_no: fields.registrarFileNo || null,
+        created_by: State.profile.id,
+      })
       .select().single();
     if (error) throw error;
-    await DB.log("create", "company", `إضافة شركة: ${name}`);
+    await DB.log("create", "company", `إضافة شركة: ${fields.name}`);
     return data;
   },
 
-  async renameCompany(id, name) {
-    const { error } = await sb.from("companies").update({ company_name: name }).eq("id", id);
+  async updateCompany(id, fields) {
+    const { error } = await sb.from("companies").update({
+      company_name: fields.name,
+      tax_file_no: fields.taxFileNo || null,
+      registrar_file_no: fields.registrarFileNo || null,
+    }).eq("id", id);
     if (error) throw error;
-    await DB.log("edit", "company", `تعديل اسم شركة إلى: ${name}`);
+    await DB.log("edit", "company", `تعديل بيانات شركة: ${fields.name}`);
   },
 
   async deleteCompany(id, name) {

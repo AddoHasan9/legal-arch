@@ -699,3 +699,5 @@ body, .card, .stat, .sidebar, .topbar, .table-wrap, .modal,
   .preview__noview { padding: 30px 18px; }
   .preview__noview-actions .btn { flex: 1; justify-content: center; min-width: 130px; }
 }
+
+.company-head__files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }

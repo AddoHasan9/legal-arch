@@ -493,6 +493,10 @@ function renderCompany(id) {
       <div class="company-head__body">
         <h1 class="page-title">${UI.esc(c.company_name)}</h1>
         <p class="page-sub">${c.doc_count} وثيقة · أُضيفت ${UI.date(c.created_at)} · آخر تحديث ${UI.date(c.updated_at)}</p>
+        ${(c.tax_file_no || c.registrar_file_no) ? `<div class="company-head__files">
+          ${c.tax_file_no ? `<span class="chip">إضبارة الضرائب: <b>${UI.esc(c.tax_file_no)}</b></span>` : ""}
+          ${c.registrar_file_no ? `<span class="chip">إضبارة مسجل الشركات: <b>${UI.esc(c.registrar_file_no)}</b></span>` : ""}
+        </div>` : ""}
       </div>
       <div class="company-head__actions">
         <button class="btn btn--primary" id="btn-up-here">${iconUpload}<span>رفع وثيقة</span></button>
@@ -694,6 +698,10 @@ function addCompanyDialog() {
     <form id="ac-form" class="form">
       <label class="field"><span>اسم الشركة</span>
         <input id="ac-name" required placeholder="مثال: شركة القدرة العربية" autofocus/></label>
+      <label class="field"><span>رقم الإضبارة في الهيئة العامة للضرائب <small class="hint-inline">(اختياري)</small></span>
+        <input id="ac-tax" placeholder="مثال: 12345"/></label>
+      <label class="field"><span>رقم الإضبارة في مسجل الشركات <small class="hint-inline">(اختياري)</small></span>
+        <input id="ac-reg" placeholder="مثال: 6789"/></label>
       <div class="modal__actions">
         <button type="button" class="btn btn--ghost" data-close>إلغاء</button>
         <button type="submit" class="btn btn--primary">إضافة</button>
@@ -704,7 +712,11 @@ function addCompanyDialog() {
     const name = m.querySelector("#ac-name").value.trim();
     if (!name) return;
     try {
-      await DB.addCompany(name);
+      await DB.addCompany({
+        name,
+        taxFileNo: m.querySelector("#ac-tax").value.trim(),
+        registrarFileNo: m.querySelector("#ac-reg").value.trim(),
+      });
       await DB.loadCompanies();
       UI.closeModal(m);
       UI.toast("تمت إضافة الشركة", "success");
@@ -716,10 +728,14 @@ function addCompanyDialog() {
 function renameCompanyDialog(id) {
   const c = State.companies.find((x) => x.id === id);
   const m = UI.openModal(`
-    <h3 class="modal__title">تعديل اسم الشركة</h3>
+    <h3 class="modal__title">تعديل بيانات الشركة</h3>
     <form id="rn-form" class="form">
-      <label class="field"><span>الاسم الجديد</span>
+      <label class="field"><span>اسم الشركة</span>
         <input id="rn-name" required value="${UI.esc(c.company_name)}" autofocus/></label>
+      <label class="field"><span>رقم الإضبارة في الهيئة العامة للضرائب <small class="hint-inline">(اختياري)</small></span>
+        <input id="rn-tax" value="${UI.esc(c.tax_file_no || "")}" placeholder="مثال: 12345"/></label>
+      <label class="field"><span>رقم الإضبارة في مسجل الشركات <small class="hint-inline">(اختياري)</small></span>
+        <input id="rn-reg" value="${UI.esc(c.registrar_file_no || "")}" placeholder="مثال: 6789"/></label>
       <div class="modal__actions">
         <button type="button" class="btn btn--ghost" data-close>إلغاء</button>
         <button type="submit" class="btn btn--primary">حفظ</button>
@@ -729,10 +745,14 @@ function renameCompanyDialog(id) {
     e.preventDefault();
     const name = m.querySelector("#rn-name").value.trim();
     try {
-      await DB.renameCompany(id, name);
+      await DB.updateCompany(id, {
+        name,
+        taxFileNo: m.querySelector("#rn-tax").value.trim(),
+        registrarFileNo: m.querySelector("#rn-reg").value.trim(),
+      });
       await DB.loadCompanies();
       UI.closeModal(m);
-      UI.toast("تم حفظ الاسم", "success");
+      UI.toast("تم حفظ البيانات", "success");
       route();
     } catch (ex) { UI.toast("فشل التعديل: " + ex.message, "error"); }
   };
