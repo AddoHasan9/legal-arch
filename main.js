@@ -522,7 +522,7 @@ function renderCompanies(search = "") {
     ${companies.length === 0
       ? UI.empty(iconBuilding, search ? "لا نتائج مطابقة" : "لا توجد شركات بعد",
           search ? "جرّب كلمة بحث أخرى." : (State.isAdmin() ? "ابدأ بإضافة أول شركة." : "بانتظار إضافة الشركات من المدير."))
-      : `<div class="grid grid--cards grid--animate">
+      : `<div class="company-rows grid--animate">
           ${companies.map((c, i) => companyCard(c, i)).join("")}
         </div>`}
   `;
@@ -603,21 +603,25 @@ function recentDocsList(docs, opts = {}) {
 
 function companyCard(c, i = 0) {
   const admin = State.isAdmin();
+  const files = [];
+  if (c.tax_file_no) files.push(`<span>${iconDoc}ضرائب: <b>${UI.esc(c.tax_file_no)}</b></span>`);
+  if (c.registrar_file_no) files.push(`<span>${iconDoc}مسجل الشركات: <b>${UI.esc(c.registrar_file_no)}</b></span>`);
   return `
-  <article class="card company-card" data-open="${c.id}" tabindex="0" style="--i:${i}">
-    <div class="company-card__top">
-      <div class="company-card__num">#${c.company_number}</div>
-      ${admin ? `<div class="company-card__tools">
-        <button class="icon-btn" data-edit-company="${c.id}" title="تعديل الاسم">${iconEdit}</button>
-        <button class="icon-btn icon-btn--danger" data-del-company="${c.id}" title="حذف">${iconTrash}</button>
-      </div>` : ""}
+  <article class="company-row" data-open="${c.id}" tabindex="0" style="--i:${i}">
+    <div class="company-row__num">#${c.company_number}</div>
+    <div class="company-row__main">
+      <h3 class="company-row__name">${UI.esc(c.company_name)}</h3>
+      ${files.length ? `<div class="company-row__files">${files.join("")}</div>` : ""}
     </div>
-    <h3 class="company-card__name">${UI.esc(c.company_name)}</h3>
-    <div class="company-card__meta">
+    <div class="company-row__meta">
       <span>${iconDoc}<b>${c.doc_count}</b> وثيقة</span>
-      <span>${iconClock}${UI.date(c.updated_at)}</span>
+      <span class="only-desktop">${iconClock}${UI.date(c.updated_at)}</span>
     </div>
-    <div class="company-card__go">فتح الأرشيف ${iconArrow}</div>
+    ${admin ? `<div class="company-row__tools">
+      <button class="icon-btn" data-edit-company="${c.id}" title="تعديل">${iconEdit}</button>
+      <button class="icon-btn icon-btn--danger" data-del-company="${c.id}" title="حذف">${iconTrash}</button>
+    </div>` : ""}
+    <div class="company-row__go">${iconArrow}</div>
   </article>`;
 }
 
