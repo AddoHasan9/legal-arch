@@ -1,0 +1,43 @@
+{
+  "name": "lexdesk-archive-desktop",
+  "version": "1.0.0",
+  "description": "تطبيق سطح المكتب لأرشيف الوثائق — مكتب المحاماة",
+  "main": "main.js",
+  "author": "مكتب المحامي عبد الحسن الخزرجي",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.qudra.lexdesk.archive",
+    "productName": "أرشيف الوثائق",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "أرشيف الوثائق"
+    }
+  }
+}
