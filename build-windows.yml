@@ -1,0 +1,50 @@
+name: بناء تطبيق ويندوز (exe)
+
+# يشتغل بطريقتين:
+# 1) يدوياً: تبويب Actions بالريبو → اختر هذا الملف → زر "Run workflow"
+# 2) تلقائياً: أي رفع ملفات داخل مجلد desktop/
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/**"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+
+    steps:
+      - name: تنزيل ملفات الريبو
+        uses: actions/checkout@v4
+
+      - name: تجهيز Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: تنصيب الاعتماديات
+        run: npm install
+
+      - name: بناء ملف exe
+        run: npm run build:win
+
+      - name: تحديد رقم إصدار (تاريخ + رقم تشغيلة)
+        id: ver
+        shell: bash
+        run: echo "tag=v$(date +'%Y.%m.%d')-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: نشر الإصدار مع ملف exe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: "أرشيف الوثائق — إصدار ${{ steps.ver.outputs.tag }}"
+          body: |
+            نسخة تطبيق سطح المكتب لويندوز (أرشيف الوثائق).
+            حمّل ملف Setup.exe وشغّله للتنصيب، أو النسخة Portable لتشغيل مباشر بدون تنصيب.
+          files: |
+            desktop/dist/*.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
